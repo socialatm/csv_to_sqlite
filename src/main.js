@@ -1,6 +1,7 @@
 const fileLib = require('./files');
 const sqlite3 = require('sqlite3').verbose();
 const dbLib = require('./db');
+const parser = require('./parser');
 
 module.exports = createDB;
 async function createDB(csvFilePath, sqliteFilePath, 
@@ -19,39 +20,30 @@ async function createDB(csvFilePath, sqliteFilePath,
     if (appendToSqliteDB) 
 	throw new Error('Unimplemented');
 
-    let db = new sqlite3.Database(sqliteFilePath);
+    let db = new sqlite3.Database(sqliteFilePath, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
 
-    db.serialize(async function() {
+    // get headline, create table and prepare statement for insert
+    const headArr = await parser.getHeadline(csvFilePath);
+    const columnNames = await dbLib.create(db, tablename, headArr);
+    const insertStmt = dbLib.createInsertStmt(db, tablename, columnNames);
 
-	// create table
-	let headline = await fileLib.getHeadline(csvFilePath);
-    	const headFields = headline.split(seperator);
-    	const fieldNames = await dbLib.create(db, tablename, headFields);
+    return new Promise( (resolve) => {
+	// get taillines and insert into table
+	parser.getTaillines(
+    	    csvFilePath, 
+    	    function(columnValues) {
+		if (columnNames.length != columnValues.length) {
+		    console.log('parseerror: ',
+				columnNames, columnValues);
+		    return;
+		}
 
-	// create insert statement for all coming inserts
-	const insertStmt = dbLib.createInsertStmt(db, tablename, fieldNames);
-
-	// insert into table
-	db.parallelize(function() {
-	    fileLib.getTaillines(
-    		csvFilePath, 
-    		function(line) {
-		    console.log('TAIL LINE :',line);
-    		    const fields = line.split(seperator);
-
-		    if (fields.length != headFields.length) {
-			// TODO put these lines in different csv document
-			console.log('parseerror: ',
-				    fields.length, headFields.length, line);
-			return;
-		    }
-
-		    insertStmt.run(fields);
-    		},
-    		function() {
-		    // TODO create indices 
-    		});
-	});
+		insertStmt.run(columnValues);
+    	    },
+    	    function() {
+		db.close();
+		resolve()
+    	    });
     });
 }
 

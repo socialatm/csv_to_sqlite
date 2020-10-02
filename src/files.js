@@ -14,6 +14,7 @@ async function fileExists(path) {
     });
 }
 
+/*
 module.exports.getHeadline = getHeadline;
 async function getHeadline(path) {
     return new Promise( (resolve) => {
@@ -60,3 +61,4 @@ function getLines(path, firstLineCB, cb, close) {
     // after other lines
     getHeadline(path, firstLineCB);
 }
+*/

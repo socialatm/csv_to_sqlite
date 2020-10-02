@@ -20,10 +20,9 @@ describe('File library', function() {
     it('should correctly identify when a file exists', async function() {
 	const existsPath = getRandomFilename('justneedstoexist');
 	fs.writeFileSync(existsPath, '');
-	let ret = await fileLib.fileExists(existsPath);
-	fs.unlink(existsPath, unlinkError);
-
-        assert.equal(ret, true);
+	let exists = await fileLib.fileExists(existsPath);
+	if (exists) fs.unlink(existsPath, unlinkError);
+        assert.equal(exists, true);
     });
 
     it('should correctly identify when a file does not exist ', async function() {
@@ -31,27 +30,31 @@ describe('File library', function() {
 	let ret = await fileLib.fileExists(nonExistingPath);
 	assert.equal(ret, false);
     });
-    
+});
+
+describe('Parser', function() {
+    const parser = require('../src/parser');
+
     it('should read headline of file', async function() {
 	const existsPath = getRandomFilename('justneedstoexist');
 	fs.writeFileSync(existsPath, '0\n1\n2');
-	let headline = await fileLib.getHeadline(existsPath);
+	let headline = await parser.getHeadline(existsPath);
 	assert.equal('0', headline);
 	fs.unlink(existsPath, unlinkError);
-
     });
 
-    it('should read headline of file', function(done) {
+    it('should read taillines of file', function(done) {
     	const existsPath = getRandomFilename('justneedstoexist');
     	fs.writeFileSync(existsPath, '0\n1\n2');
-	let lines = []
-    	fileLib.getTaillines(existsPath, 
+    	let lines = []
+    	parser.getTaillines(existsPath, 
     			     function(line) {
     				 lines.push(line);
     			     },
     			     function() {
     				 assert.equal(lines[0], '1');
     				 assert.equal(lines[1], '2');
+				 fs.unlink(existsPath, unlinkError);
     				 done();
     			     });
     });
