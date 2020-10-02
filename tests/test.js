@@ -97,6 +97,7 @@ describe('Database creation', function() {
     
 
 describe('Overall', function() {
+    const sqlite3 = require('sqlite3').verbose();
     const main = require('../src/main');
 
     const csvPath = getRandomFilename('csvpath');
@@ -143,19 +144,29 @@ describe('Overall', function() {
     	let csvPath = '/tmp/t.csv';
     	let sqlitePath = '/tmp/t.db';
 	
-    	fs.writeFileSync(csvPath, 'first name;secondname\n'+
-    			 'Gerhard;Schröder\n'+
-    			 'Angela;Merkel');
-
+    	fs.writeFileSync(csvPath, 'first name;secondname;pa$/$/$/rty\n'+
+    			 'Gerhard;Schröder;SPD\n'+
+    			 'Angela;Merkel;CDU');
     	await main(
     	    csvPath, sqlitePath, 
     	    false,
     	    'cooltable', ';'
     	);
 
+	const db = new sqlite3.Database(sqlitePath);
+	await new Promise( (resolve) => {
+	    db.all("select * from cooltable", function(err, allrows) {
+		const wanted = [
+		    { firstname: 'Gerhard', secondname: 'Schröder', party: 'SPD' },
+		    { firstname: 'Angela', secondname: 'Merkel', party: 'CDU' }
+		];
+		assert.deepEqual(allrows, wanted);
+		resolve();
+	    });
+	});
+
     	fs.unlink(sqlitePath, unlinkError);
     	fs.unlink(csvPath, unlinkError);
-
     });
 
 });
