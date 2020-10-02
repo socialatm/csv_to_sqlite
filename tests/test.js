@@ -38,7 +38,7 @@ describe('Parser', function() {
     it('should read headline of file', async function() {
 	const existsPath = getRandomFilename('justneedstoexist');
 	fs.writeFileSync(existsPath, '0\n1\n2');
-	let headline = await parser.getHeadline(existsPath);
+	let headline = await parser.getHeadline(existsPath, ";");
 	assert.equal('0', headline);
 	fs.unlink(existsPath, unlinkError);
     });
@@ -48,6 +48,7 @@ describe('Parser', function() {
     	fs.writeFileSync(existsPath, '0\n1\n2');
     	let lines = []
     	parser.getTaillines(existsPath, 
+			    ";",
     			     function(line) {
     				 lines.push(line);
     			     },

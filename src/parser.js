@@ -8,10 +8,10 @@ function turnObjectIntoArray(obj) {
 }
 
 module.exports.getHeadline = getHeadline;
-async function getHeadline(path) {
+async function getHeadline(path, separator) {
     return new Promise( (resolve) => {
 	const readstream = fs.createReadStream(path);
-	const csvstream = csv({ separator: '|', headers: false});
+	const csvstream = csv({ separator: separator, headers: false});
 	let firstRow = true;
 
 	csvstream
@@ -31,10 +31,14 @@ async function getHeadline(path) {
 }
 
 module.exports.getTaillines = getTaillines;
-function getTaillines(path, cb, endCB) {
+function getTaillines(path, separator, cb, endCB) {
     return new Promise( (resolve) => {
 	const readstream = fs.createReadStream(path);
-	const csvstream = csv({ separator: '|', headers: false, skipLines: 1});
+	const csvstream = csv({ 
+	    separator: separator, 
+	    headers: false, 
+	    skipLines: 1
+	});
 
 	csvstream
 	    .on('data', (data) => {

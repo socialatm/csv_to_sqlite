@@ -6,7 +6,7 @@ const parser = require('./parser');
 module.exports = createDB;
 async function createDB(csvFilePath, sqliteFilePath, 
 			appendToSqliteDB,
-			tablename, seperator) {
+			tablename, separator) {
 
     let csvExists = await fileLib.fileExists(csvFilePath); 
     let sqliteExists = await fileLib.fileExists(sqliteFilePath);
@@ -23,7 +23,7 @@ async function createDB(csvFilePath, sqliteFilePath,
     let db = new sqlite3.Database(sqliteFilePath, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
 
     // get headline, create table and prepare statement for insert
-    const headArr = await parser.getHeadline(csvFilePath);
+    const headArr = await parser.getHeadline(csvFilePath, separator);
     const columnNames = await dbLib.create(db, tablename, headArr);
     const insertStmt = dbLib.createInsertStmt(db, tablename, columnNames);
 
@@ -34,6 +34,7 @@ async function createDB(csvFilePath, sqliteFilePath,
     await new Promise( (resolve) => {
 	parser.getTaillines(
     	    csvFilePath, 
+	    separator,
     	    async function(columnValues) {
 		if (columnNames.length != columnValues.length) {
 		    console.log('parseerror: ', columnNames, columnValues);
