@@ -10,7 +10,7 @@ function getRandomFilename(purpose) {
 // TODO handle errors
 function unlinkError(err) {
     if (err) {
-	console.log('FATAL UNLINK ERROR');
+	console.log('TEST COULD NOT DELETE TEST FILES');
     }
 }
 
