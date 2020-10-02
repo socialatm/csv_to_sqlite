@@ -27,22 +27,35 @@ async function createDB(csvFilePath, sqliteFilePath,
     const columnNames = await dbLib.create(db, tablename, headArr);
     const insertStmt = dbLib.createInsertStmt(db, tablename, columnNames);
 
-    return new Promise( (resolve) => {
-	// get taillines and insert into table
+
+    
+    let closed = false;
+    let openInserts = 0;
+    await new Promise( (resolve) => {
 	parser.getTaillines(
     	    csvFilePath, 
-    	    function(columnValues) {
+    	    async function(columnValues) {
 		if (columnNames.length != columnValues.length) {
-		    console.log('parseerror: ',
-				columnNames, columnValues);
+		    console.log('parseerror: ', columnNames, columnValues);
 		    return;
 		}
 
-		insertStmt.run(columnValues);
+		openInserts += 1;
+		await new Promise( (resolveInsert) => {
+		    insertStmt.run(columnValues, function() {
+			openInserts -= 1;
+			resolveInsert();
+		    });
+		});
+		if (closed && openInserts == 0) {
+		    resolve();
+		}
     	    },
     	    function() {
-		db.close();
-		resolve()
+		closed = true;
+		if (closed && openInserts == 0) {
+		    resolve();
+		}
     	    });
     });
 }

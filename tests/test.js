@@ -138,14 +138,23 @@ describe('Overall', function() {
     	   assert.ok(errorWasCorrect);
        });
 
-    // it('should create the sqlite3', async function() {
-    // 	let csvPath = '/home/user/work/csv_to_sqlite3/testinput/testinput.csv';
-    // 	let sqlitePath = '/home/user/work/csv_to_sqlite3/testinput/testinput.db';
-    // 	await run(csvPath, sqlitePath, 
-    // 		  false,
-    // 		  'cooltable', '|'
-    // 		 );
-    // 	fs.unlink(sqlitePath, unlinkError);
-    // });
+    it('should create the sqlite3', async function() {
+    	let csvPath = '/tmp/t.csv';
+    	let sqlitePath = '/tmp/t.db';
+	
+    	fs.writeFileSync(csvPath, 'first name;secondname\n'+
+    			 'Gerhard;Schröder\n'+
+    			 'Angela;Merkel');
+
+    	await main(
+    	    csvPath, sqlitePath, 
+    	    false,
+    	    'cooltable', ';'
+    	);
+
+    	fs.unlink(sqlitePath, unlinkError);
+    	fs.unlink(csvPath, unlinkError);
+
+    });
 
 });
