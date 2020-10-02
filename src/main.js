@@ -42,15 +42,12 @@ async function createDB(csvFilePath, sqliteFilePath,
 		}
 
 		openInserts += 1;
-		await new Promise( (resolveInsert) => {
-		    insertStmt.run(columnValues, function() {
-			openInserts -= 1;
-			resolveInsert();
-		    });
+		insertStmt.run(columnValues, function() {
+		    openInserts -= 1;
+		    if (closed && openInserts == 0) {
+			resolve();
+		    }
 		});
-		if (closed && openInserts == 0) {
-		    resolve();
-		}
     	    },
     	    function() {
 		closed = true;
