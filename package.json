@@ -4,7 +4,8 @@
    "description": "Transforms a csv file into an sqlite3 file",
    "main": "run.js",
    "scripts": {
-      "test": "mocha"
+      "test": "mocha",
+      "start": "node src/run.js"
    },
    "keywords": [
       "csv",
