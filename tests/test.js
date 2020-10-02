@@ -93,7 +93,7 @@ describe('Database creation', function() {
     
 
 describe('Overall', function() {
-    const run = require('../src/run');
+    const main = require('../src/main');
 
     const csvPath = getRandomFilename('csvpath');
     const sqlitePath = getRandomFilename('sqlitepath');
@@ -106,7 +106,7 @@ describe('Overall', function() {
 	   var errorWasCorrect = false;
 
 	   try { 
-	       await run(csvPath, sqlitePath, false);
+	       await main(csvPath, sqlitePath, false);
 	   } catch(e) {
 	       if(e.message === 'SQLFileExists') 
 		   errorWasCorrect = true;
@@ -124,7 +124,7 @@ describe('Overall', function() {
     	   let errorWasCorrect = false;
 	   fs.writeFileSync(sqlitePath, '');
     	   try { 
-    	       await run(csvPath+'1', sqlitePath, true);
+    	       await main(csvPath+'1', sqlitePath, true);
     	   } catch(e) {
     	       if(e.message === 'CSVFileDoesNotExist') 
 		   errorWasCorrect = true
