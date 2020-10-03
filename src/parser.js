@@ -1,5 +1,5 @@
 const fs = require('fs')
-const csv = require('csv-parser')
+const csvParse = require('csv-parse');
 
 function turnObjectIntoArray(obj) {
     return Object.keys(obj).map(function(key) {
