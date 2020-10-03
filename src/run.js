@@ -10,10 +10,11 @@ async function run() {
     let csvPath = process.env['CSVPATH'];
     let sqlitePath = process.env['SQLPATH'];
     let delimiter = process.env['DELIM'];
+    let tablename = process.env['TABLENAME'];
 
     await main(csvPath, sqlitePath, 
 	      false,
-	      'cooltable', delimiter
+	      tablename, delimiter
 	     );
 }
 run();
