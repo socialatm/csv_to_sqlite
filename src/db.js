@@ -8,10 +8,6 @@ function create(db, tablename, fields) {
 	let text = 'CREATE TABLE '+tablename+' (';
 	let firstField = true;
 
-	fields = fields.map(function(field) {
-	    return field.replace(/[^\w]/g,"");
-	});
-
 	fields.forEach(function(field) {
 	    if (!firstField) text += ',';
 	    text += field+ ' text';
