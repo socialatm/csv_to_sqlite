@@ -16,9 +16,7 @@ function create(db, tablename, fields) {
 	text += ')';
 
 	//console.log('CREATE:', text);
-	db.run(text, function() {
-	    resolve(fields);
-	});
+	db.run(text, resolve);
     });
 }
 
