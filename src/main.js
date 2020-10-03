@@ -1,5 +1,7 @@
-const fileLib = require('./files');
 const sqlite3 = require('sqlite3').verbose();
+const { Writable } = require('stream');
+
+const fileLib = require('./files');
 const dbLib = require('./db');
 const parser = require('./parser');
 
@@ -23,38 +25,12 @@ async function createDB(csvFilePath, sqliteFilePath,
     let db = new sqlite3.Database(sqliteFilePath);
 
     // get headline, create table and prepare statement for insert
-    const headArr = await parser.getHeadline(csvFilePath, separator);
-    const columnNames = await dbLib.create(db, tablename, headArr);
-    const insertStmt = dbLib.createInsertStmt(db, tablename, columnNames);
+    const parsedStream = parser(csvFilePath, separator);
+    const insertStream = new InsertStream(db, tablename);
 
-
-    
-    let closed = false;
-    let openInserts = 0;
-    await new Promise( (resolve) => {
-	parser.getTaillines(
-    	    csvFilePath, 
-	    separator,
-    	    async function(columnValues) {
-		if (columnNames.length != columnValues.length) {
-		    console.log('parseerror: ', columnNames, columnValues);
-		    return;
-		}
-
-		openInserts += 1;
-		insertStmt.run(columnValues, function() {
-		    openInserts -= 1;
-		    if (closed && openInserts == 0) {
-			resolve();
-		    }
-		});
-    	    },
-    	    function() {
-		closed = true;
-		if (closed && openInserts == 0) {
-		    resolve();
-		}
-    	    });
+    return new Promise( (resolve) => {
+	parsedStream.on('end', resolve);
+	parsedStream.pipe(insertStream);
     });
 }
 
