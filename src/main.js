@@ -59,3 +59,31 @@ async function createDB(csvFilePath, sqliteFilePath,
 }
 
 
+class InsertStream extends Writable {
+    constructor(db, tablename) {
+	super({highWaterMark: 5, objectMode: true})
+	this.db = db;
+	this.insertStmt = false,
+	this.tablename = tablename;
+    }
+    async _write(splits, encoding, next) {
+	// first result creates table
+	if (!this.insertStmt) {
+	    this.insertStmt = await this.create(splits);
+	}
+	// other results insert into table
+	else {
+	    await this.insert(splits);
+	}
+	next();
+    }
+    async create(columns) {
+	await dbLib.create(this.db, this.tablename, columns);
+	return dbLib.createInsertStmt(this.db, this.tablename, columns);
+    }
+    async insert(values) {
+	await new Promise( (resolve) => {
+	    this.insertStmt.run(values, resolve);
+	});
+    }
+}
