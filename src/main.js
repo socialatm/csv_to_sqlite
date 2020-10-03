@@ -20,7 +20,7 @@ async function createDB(csvFilePath, sqliteFilePath,
     if (appendToSqliteDB) 
 	throw new Error('Unimplemented');
 
-    let db = new sqlite3.Database(sqliteFilePath, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
+    let db = new sqlite3.Database(sqliteFilePath);
 
     // get headline, create table and prepare statement for insert
     const headArr = await parser.getHeadline(csvFilePath, separator);
