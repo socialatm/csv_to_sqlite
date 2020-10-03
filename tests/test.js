@@ -35,29 +35,32 @@ describe('File library', function() {
 describe('Parser', function() {
     const parser = require('../src/parser');
 
-    it('should read headline of file', async function() {
+    it('should parse file', function(done) {
+	// create test filen
 	const existsPath = getRandomFilename('justneedstoexist');
-	fs.writeFileSync(existsPath, '0\n1\n2');
-	let headline = await parser.getHeadline(existsPath, ";");
-	assert.equal('0', headline);
-	fs.unlink(existsPath, unlinkError);
-    });
+	fs.writeFileSync(existsPath, 
+			 'h1;h 2;h()((((3\n'+ // malformed header
+			 'r11;r12;r13\n'+ // first content row
+			 'r21;r22;r23'); // second content row
 
-    it('should read taillines of file', function(done) {
-    	const existsPath = getRandomFilename('justneedstoexist');
-    	fs.writeFileSync(existsPath, '0\n1\n2');
-    	let lines = []
-    	parser.getTaillines(existsPath, 
-			    ";",
-    			     function(line) {
-    				 lines.push(line);
-    			     },
-    			     function() {
-    				 assert.equal(lines[0], '1');
-    				 assert.equal(lines[1], '2');
-				 fs.unlink(existsPath, unlinkError);
-    				 done();
-    			     });
+	// read transfomer the data
+	let parserProduced = [];
+	const parsedstream = parser(existsPath, ";");
+	parsedstream.on('data', 
+			function(data) { 
+			    parserProduced.push(data);
+			});
+
+	parsedstream.on('end', function() {
+	    assert.deepEqual(parserProduced,
+			     [
+				 ['h1', 'h2', 'h3'],
+				 ['r11', 'r12', 'r13'],
+				 ['r21', 'r22', 'r23'],
+			     ]);
+	    fs.unlink(existsPath, unlinkError);
+	    done();
+	});
     });
 });
 

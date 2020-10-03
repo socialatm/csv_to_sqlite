@@ -1,56 +1,39 @@
 const fs = require('fs')
 const csvParse = require('csv-parse');
+const { Transform } = require('stream');
 
-function turnObjectIntoArray(obj) {
-    return Object.keys(obj).map(function(key) {
-	return obj[key];
-    });
+module.exports = parser;
+function parser(path, delim, getNextLine) {
+    const readstream = fs.createReadStream(path);
+    const parser = csvParse({delimiter: delim});
+
+    const transformer = new Transformer({
+	objectMode: true, highWaterMark: 5
+    }, getNextLine);        
+
+    return readstream.pipe(parser).pipe(transformer);
 }
 
-module.exports.getHeadline = getHeadline;
-async function getHeadline(path, separator) {
-    return new Promise( (resolve) => {
-	const readstream = fs.createReadStream(path);
-	const csvstream = csv({ separator: separator, headers: false});
-	let firstRow = true;
 
-	csvstream
-	    .on('data', (data) => {
-		readstream.close();
-		if(firstRow) {
-		    resolve(turnObjectIntoArray(data));
-		    firstRow = false;
-		}
-	    })
-	    .on('end', () => {
-		console.log('END');
+class Transformer extends Transform {
+    constructor(options, getNextLine) {
+	super(options);
+	this.header = true;
+    }
+    _transform(chunk, enc, finished) {
+	if (this.header) {
+	    this.header = false;
+	    let columns = chunk.map(function(column) {
+		return column.replace(/[^\w]/g, "");
 	    });
-
-	readstream.pipe(csvstream);
-    });
+	    finished(null, columns);
+	}
+	else {
+	    finished(null, chunk);
+	}
+    }
 }
 
-module.exports.getTaillines = getTaillines;
-function getTaillines(path, separator, cb, endCB) {
-    return new Promise( (resolve) => {
-	const readstream = fs.createReadStream(path);
-	const csvstream = csv({ 
-	    separator: separator, 
-	    headers: false, 
-	    skipLines: 1
-	});
-
-	csvstream
-	    .on('data', (data) => {
-		cb(turnObjectIntoArray(data));
-	    })
-	    .on('end', () => {
-		endCB();
-	    });
-
-	readstream.pipe(csvstream);
-    });
-}
 
 
 
