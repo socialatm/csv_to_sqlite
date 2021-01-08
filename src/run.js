@@ -1,7 +1,7 @@
 const main = require('./main');
 
 async function run() {
-    ['CSVPATH', 'SQLPATH', 'DELIM'].forEach(function(varname) {
+    ['CSVPATH', 'SQLPATH', 'DELIM', 'TABLENAME'].forEach(function(varname) {
 	if (process.env[varname] == null || 
 	    process.env[varname].length == 0) 
 	    throw new Error('Please supply '+varname);
