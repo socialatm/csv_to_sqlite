@@ -1,4 +1,4 @@
-const fs = require('fs')
+const fs = require('fs');
 const csvParse = require('csv-parse');
 const { Transform } = require('stream');
 
