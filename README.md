@@ -15,44 +15,56 @@ What it needs to start:
 * the information an the used delimiter
 * the soon to be created tablename
 
-It uses streams to efficiently get data from the CSV and fill the SQLITE DB.
+It uses streams to efficiently get data from the CSV and fill the SQLite DB.
 
 ## DEMO
 
 ### CREATE CSV FILE
 
+Please note that csv_to_sqlite is somewhat flexible regarding the input due
+to the use of csv-parse.
+
 ```
-cat << EOF >> /tmp/csv_file.db
-
-TODO: TESTDATA HERE!
-
+cat << EOF >> /tmp/books.csv
+title;author
+"Dracula";"Bram Stoker"
+"The Importance of Being Earnest";"Oscar Wilde"
+The Picture of Dorian Gray;Oscar Wilde
 EOF
 ```
-
 
 ### Run csv_to_sqlite
 
 ```
-CSVPATH="/tmp/csv_file.db" SQLPATH="/tmp/database.db" TABLENAME="books" DELIM=";" npm start
+CSVPATH="/tmp/books.csv" SQLPATH="/tmp/books.db" TABLENAME="books" DELIM=";" npm start
 ```
 
 ### Performance
 
-TODO: Show performance sample of realworld db
+This will obviously change based on your setup (dataset, system load and harddrives).
+To give at least some insight into performance:
 
+```
+# get filesize
+du -h /tmp/testinput.csv
+1.1G	/tmp/testinput.csv
 
-## MISC
+# get number of columns
+head -n1 /tmp/testinput.csv  | grep -o ";" | wc -l
+53
 
-### Memory profiling (inspect running program)
+# get number of rows 
+wc -l /tmp/testinput.csv
+571983 /tmp/testinput.csv
 
-Change package.json:
+# time the import
+time CSVPATH="/tmp/testinput.csv" SQLPATH="/tmp/testdatabase.db" TABLENAME="testtable" DELIM=";" npm start
 
-* OLD 
-  "start": "node src/run.js"
-* NEW 
-  "start": "node --inspect src/run.js"
+real	1m40.509s
+user	1m15.842s
+sys	0m28.029s
 
-Do not forget to revert your changes for production!
+```
 
 ## Lawyerly stuff
 
