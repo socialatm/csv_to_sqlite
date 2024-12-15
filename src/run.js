@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const main = require('./main');
 
 async function run() {
